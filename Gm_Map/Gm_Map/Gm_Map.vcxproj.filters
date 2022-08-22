@@ -26,5 +26,8 @@
     <ClInclude Include="..\..\gmez\gm_map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gmez\gm_particle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

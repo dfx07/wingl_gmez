@@ -73,6 +73,16 @@ public:
         m_autofree = bAuto;
     }
 
+    int CellState(int i, int j)
+    {
+        if (!m_map_data) return 0;   // no data
+        if (i < 0 || i >= m_rows)    // over row
+            return -1; 
+        if (j < 0 || j >= m_columns) // over columns
+            return -2;
+        return Get(i, j)->m_data ? 1 : 0; // inside exits || no data
+    }
+
     // i : row, j columns
     cell_map_data* Get(int i, int j)
     {
@@ -114,6 +124,30 @@ public: // Public function handle check
             }
         }
         return NULL;
+    }
+
+    // Get neighbor in x,y = 
+    // [x-1, y-1][x, y-1][x+1, y-1]
+    // [x-1, y  ][x, y  ][x+1, y  ]
+    // [x-1, y+1][x, y+1][x+1, y+1]
+
+    vector<cell_map_data*> NeighborXY(int i, int j)
+    {
+        vector<cell_map_data*> nei;
+
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                int r = i + x;
+                int c = j + y;
+                if (r == i && c == j) continue;
+
+                cell_map_data* cell = Get(r, c);
+                nei.push_back(cell);
+            }
+        }
+        return nei;
     }
 
 private:
