@@ -43,6 +43,18 @@ public:
     }
 
 private:
+    void MoveLeftDown(int step = 1)
+    {
+        x = x - step;
+        y = y + step;
+    }
+
+    void MoveRightDown(int step = 1)
+    {
+        x = x + step;
+        y = y + step;
+    }
+
     void MoveLeft(int step = 1)
     {
         x = x - step;
@@ -75,13 +87,13 @@ public:
         // Move left prioritized
         else if (!neighbor[5])
         {
-            MoveLeft();
+            MoveLeftDown();
             state = 1;
         }
         // Move right = end
         else if (!neighbor[7])
         {
-            MoveRight();
+            MoveRightDown();
             state = 1;
         }
 
