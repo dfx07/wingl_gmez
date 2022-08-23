@@ -8,6 +8,10 @@
 class particel_piel
 {
 public:
+    // Data draw opengl
+    glm::vec2 vertex[4];
+
+public:
     int x;
     int y;
 public:
@@ -22,18 +26,29 @@ public:
     {
 
     }
-
-
 };
 
 
 class sand_piel : public particel_piel
 {
 public:
+
+    void UpdateDataRender(float x, float y, float w, float h)
+    {
+        vertex[0] = {x    , y    };
+        vertex[1] = {x + w, y    };
+        vertex[2] = {x + w, y + h};
+        vertex[3] = {x    , y + h};
+    }
+
+public:
     sand_piel()
     {
         x = 0;
         y = 0;
+
+        vertex[0] = vertex[1] = { 0, 0 };
+        vertex[2] = vertex[3] = { 0, 0 };
     }
 
     sand_piel(int x, int y)

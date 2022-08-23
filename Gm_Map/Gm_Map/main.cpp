@@ -14,10 +14,13 @@ cell_map_data* cell_move = NULL;
 vector<sand_piel>  sands;
 vector<water_piel> waters;
 
-wall_piel wall(3);
+wall_piel wall(5);
 
 int input_mode = 0;
 int count_change = 0;
+
+GLuint vAO_sand;
+GLuint vBO_sand;
 
 
 glm::vec3 pos = { 0, 0, 8 };
@@ -43,6 +46,12 @@ void OnCreate(Window* win)
     //map2d.Init(0, 0, (float)winwid/2, (float)winhei, 0.f);
     //map2d.AutoFreeData();
     map2d.CreateMapSquare(200);
+
+
+    // Create data opengl sand
+    glGenVertexArrays(1, &vAO_sand);
+    glGenBuffers(1, &vBO_sand);
+
 
 
 
@@ -159,6 +168,7 @@ void OnMouseButtonRealtime(Window* win)
 
 void OnProcess(Window* win)
 {
+    int xnew, ynew;
     int x, y = 0;
     int nei[8];
     for (int i = 0; i < sands.size(); i++)
@@ -175,16 +185,39 @@ void OnProcess(Window* win)
 
         int state = sands[i].Update(nei);
 
-        if (state == 0) // stop
+        if (state == 0) // stop move
         {
-            sands[i].GetXY(x, y);
+            // Restore cell old
             cell_map_data* cell = map2d.Get(x, y);
+            cell->m_data = NULL;
 
+            // New position sand to cell
+            sands[i].GetXY(x, y);
+            cell = map2d.Get(x, y);
             cell->m_data = &sands[i];
+
+            // Update data render sand
+            sands[i].UpdateDataRender(cell->x, cell->y, map2d.m_cellwidth, map2d.m_cellheight);
         }
     }
+    cout << sizeof(sand_piel) << endl;
+    cout << sizeof(float) << endl;
+    cout << sizeof(int) << endl;
 
-    int xnew, ynew;
+    if (sands.size() > 0)
+    {
+        glBindVertexArray(vAO_sand);
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vBO_sand);
+            glBufferData(GL_ARRAY_BUFFER, sands.size() * sizeof(sand_piel), &sands[0], GL_STATIC_DRAW);
+
+            glEnableClientState(GL_VERTEX_ARRAY);
+            glVertexPointer(2, GL_FLOAT, sizeof(sand_piel), (void*)0);
+        }
+        glBindVertexArray(0);
+    }
+
+
     for (int i = 0; i < waters.size(); i++)
     {
         int sub = rand() % 2;
@@ -264,7 +297,7 @@ void DrawSand(sand_piel* sand, float widthcell, float heightcell)
 
     glBegin(GL_QUADS);
     {
-        glVertex2f(cell->x, cell->y);
+        glVertex2f(cell->x,             cell->y);
         glVertex2f(cell->x + widthcell, cell->y);
         glVertex2f(cell->x + widthcell, cell->y + heightcell);
         glVertex2f(cell->x, cell->y + heightcell);
@@ -348,10 +381,16 @@ void OnDraw(Window* win)
     //}
 
     glColor3f(1.0, 0.0, 0.0);
-    for (int i = 0; i < sands.size(); i++)
+    //for (int i = 0; i < sands.size(); i++)
+    //{
+    //    DrawSand(&sands[i], map2d.m_cellwidth, map2d.m_cellheight);
+    //}
+
+    glBindVertexArray(vAO_sand);
     {
-        DrawSand(&sands[i], map2d.m_cellwidth, map2d.m_cellheight);
+        glDrawArrays(GL_QUADS, 0, sands.size());
     }
+    glBindVertexArray(0);
 
     for (int i = 0; i < waters.size(); i++)
     {
