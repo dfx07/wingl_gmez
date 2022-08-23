@@ -14,6 +14,8 @@ cell_map_data* cell_move = NULL;
 vector<sand_piel>  sands;
 vector<water_piel> waters;
 
+wall_piel wall(3);
+
 int input_mode = 0;
 int count_change = 0;
 
@@ -43,10 +45,12 @@ void OnCreate(Window* win)
     map2d.CreateMapSquare(200);
 
 
+
     Combobox* cbb = new Combobox(20, 20);
 
     cbb->AddItem("sand" , new int(0));
     cbb->AddItem("water", new int(1));
+    cbb->AddItem("wall" , new int(2));
 
     cbb->SetSelect(0);
     cbb->SetEventSelectedChange(CbbChange);
@@ -131,9 +135,23 @@ void OnMouseButtonRealtime(Window* win)
             {
                 sands.push_back(sand_piel(cell->irow, cell->icol));
             }
-            else
+            else if(input_mode == 1)
             {
                 waters.push_back(water_piel(cell->irow, cell->icol));
+            }
+            else if (input_mode == 2)
+            {
+                vector<PIXEL> nei = wall.neighbor_pixel(cell->irow, cell->icol);
+
+                for (int i = 0; i < nei.size(); i++)
+                {
+                    if (map2d.CellState(nei[i].x, nei[i].y) == 0)
+                    {
+                        wall.Add(nei[i].x, nei[i].y);
+                        cell_map_data* cell = map2d.Get(nei[i].x, nei[i].y);
+                        cell->m_data = &wall;
+                    }
+                }
             }
         }
     }
@@ -273,6 +291,23 @@ void DrawWater(water_piel* water, float widthcell, float heightcell)
     glEnd();
 }
 
+void DrawWallPixel(int x, int y, float widthcell, float heightcell)
+{
+    cell_map_data* cell = map2d.Get(x, y);
+
+    if (!cell) return;
+    glColor3f(0.6f, 0.1f, 0.1f);
+
+    glBegin(GL_QUADS);
+    {
+        glVertex2f(cell->x, cell->y);
+        glVertex2f(cell->x + widthcell, cell->y);
+        glVertex2f(cell->x + widthcell, cell->y + heightcell);
+        glVertex2f(cell->x, cell->y + heightcell);
+    }
+    glEnd();
+}
+
 void OnDraw(Window* win)
 {
     glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
@@ -321,6 +356,13 @@ void OnDraw(Window* win)
     for (int i = 0; i < waters.size(); i++)
     {
         DrawWater(&waters[i], map2d.m_cellwidth, map2d.m_cellheight);
+    }
+
+    for (int i = 0; i < wall.SizePixel(); i++)
+    {
+        int x, y;
+        wall.GetXY(i, x, y);
+        DrawWallPixel(x, y, map2d.m_cellwidth, map2d.m_cellheight);
     }
 
     //glColor3f(1.0, 0.0, 0.0);

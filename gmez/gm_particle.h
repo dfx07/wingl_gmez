@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////////////
 // File: gm_map.h   -- Map data game engine                                         
 // Copyright (C) 2021-2022 Thuong.NV   Created : 13/08/2022                         
 // For conditions of distribution and use, see copyright notice in readme.txt       
@@ -202,5 +202,86 @@ public:
         }
 
         return state;
+    }
+};
+
+
+struct PIXEL
+{
+public:
+    PIXEL(int _x, int _y) 
+        :x(_x), y(_y) { }
+public:
+    int x;
+    int y;
+};
+
+class wall_piel
+{
+private:
+    int x;
+    int y;
+    int radius;
+
+    vector<PIXEL> data;
+
+public:
+    wall_piel(int r = 0): radius(r)
+    {
+    }
+
+    // Algorithm : point is inside the circel = (x, y ,r);
+    // (x - xc)^2 + (y - yc)^2 < r^2
+    bool check_point_in_circle(int x , int y , int r, // circle infor
+                               int xc, int yc)        // point check
+    {
+        return std::pow(x - xc, 2) + std::pow(y - yc, 2) < std::pow(r, 2);
+    }
+
+    vector<PIXEL> neighbor_pixel(int x, int y)
+    {
+        vector<PIXEL> radius_offset_map;
+
+        if (radius <= 0)
+        {
+            radius_offset_map.push_back(PIXEL(x, y));
+            return radius_offset_map;
+        }
+
+        // Check the point of the square is inside the circle;
+        for (int i = -radius; i < radius; i++)
+        {
+            for (int j = -radius; j < radius; j++)
+            {
+                if (check_point_in_circle(0, 0, radius, i, j))
+                {
+                    radius_offset_map.push_back(PIXEL(i, j));
+                }
+            }
+        }
+
+        // Actual coordinates after subtracting offset
+        for (int i = 0; i < radius_offset_map.size(); i++)
+        {
+            radius_offset_map[i].x += x;
+            radius_offset_map[i].y += y;
+        }
+        return radius_offset_map;
+    }
+
+    void Add(int x, int y)
+    {
+        data.push_back(PIXEL(x, y));
+    }
+
+    int SizePixel()
+    {
+        return data.size();
+    }
+
+    void GetXY(int i, int& x, int& y)
+    {
+        x = data[i].x;
+        y = data[i].y;
     }
 };
